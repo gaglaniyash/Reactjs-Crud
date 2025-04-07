@@ -1,10 +1,11 @@
 import React from 'react'
 // import Nav1 from './Component/Nav1'
 // import Card1 from './Component/Card1'
-import LocalStorageCrud from './Component/LocalStorageCrud'
-import Filter from './Component/Filter'
-import Searching from './Component/Searching'
-import Sorting from './Component/Sorting'
+// import LocalStorageCrud from './Component/LocalStorageCrud'
+// import Filter from './Component/Filter'
+// import Searching from './Component/Searching'
+// import Sorting from './Component/Sorting'
+import ReduxStudentCrud from './Component/ReduxStudentCrud'
 
 // import One from './Component/Props.jsx/one'
 // import Two from './Component/Props.jsx/two'
@@ -18,10 +19,11 @@ export default function App() {
       <Two data = {second}/> */}
       {/* <Nav1/>
       <Card1/> */}
-      <LocalStorageCrud/>
+      {/* <LocalStorageCrud/> */}
       {/* <Filter/> */}
       {/* <Searching/> */}
       {/* <Sorting/> */}
+      <ReduxStudentCrud/>
     </div>
   )
 }

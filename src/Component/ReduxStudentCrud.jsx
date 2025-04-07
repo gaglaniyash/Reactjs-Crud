@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Button from "@mui/material/Button";
 import {
   FormControl,
@@ -14,32 +15,31 @@ import {
   TextField,
   Box,
 } from "@mui/material";
+import {
+  addStudent,
+  updateStudent,
+  deleteStudent,
+  setSort,
+  setSearchTerm,
+  setCategory,
+  filterByCategory,
+} from "../redux/studentSlice";
 
-export default function LocalStorageCrud() {
-  const [sort, setSort] = useState("asc");
-  const [term, setTerm] = useState("");
-  const [cat, setCat] = useState("");
+export default function ReduxStudentCrud() {
+  const dispatch = useDispatch();
+  const { students, sort, searchTerm, category } = useSelector((state) => state.students);
+  
   const [name, setName] = useState("");
   const [sub, setSub] = useState("");
   const [marks, setMarks] = useState("");
   const [phone, setPhone] = useState("");
   const [attendance, setAttendance] = useState("");
-  const [record, setRecord] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [nameErr, setNameErr] = useState("");
   const [subErr, setSubErr] = useState("");
   const [marksErr, setMarksErr] = useState("");
   const [phoneErr, setPhoneErr] = useState("");
   const [attendanceErr, setAttendanceErr] = useState("");
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = () => {
-    let allData = JSON.parse(localStorage.getItem("students")) || [];
-    setRecord(allData);
-  };
 
   const phoneValidation = /^[0-9]{10}$/;
 
@@ -87,19 +87,14 @@ export default function LocalStorageCrud() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    const studentData = { id: editIndex || Date.now(), name, sub, marks, phone, attendance };
+    
     if (editIndex == null) {
-      let obj = { id: Date.now(), name, sub, marks, phone, attendance };
-      setRecord([...record, obj]);
-      localStorage.setItem("students", JSON.stringify([...record, obj]));
+      dispatch(addStudent(studentData));
     } else {
-      let singleData = record.find((item) => item.id == editIndex);
-      singleData.name = name;
-      singleData.sub = sub;
-      singleData.marks = marks;
-      singleData.phone = phone;
-      singleData.attendance = attendance;
-      localStorage.setItem("students", JSON.stringify(record));
+      dispatch(updateStudent(studentData));
     }
+
     setName("");
     setSub("");
     setMarks("");
@@ -109,13 +104,11 @@ export default function LocalStorageCrud() {
   };
 
   const handleDelete = (id) => {
-    let data = record.filter((item) => item.id != id);
-    localStorage.setItem("students", JSON.stringify(data));
-    setRecord(data);
+    dispatch(deleteStudent(id));
   };
 
   const handleEdit = (id) => {
-    let singleData = record.find((item) => item.id == id);
+    const singleData = students.find((item) => item.id === id);
     setName(singleData.name);
     setSub(singleData.sub);
     setMarks(singleData.marks);
@@ -125,21 +118,16 @@ export default function LocalStorageCrud() {
   };
 
   const handleFilter = () => {
-    let originalData = JSON.parse(localStorage.getItem("students"));
-    let filteredRecords =
-      cat === "all"
-        ? originalData
-        : originalData.filter((item) => item.sub === cat);
-    setRecord(filteredRecords);
+    dispatch(filterByCategory(category));
   };
 
-  const searchedAndSortedData = record
-    .filter((item) => item.name.toLowerCase().includes(term.toLowerCase()))
+  const searchedAndSortedData = students
+    .filter((item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => (sort === "asc" ? a.marks - b.marks : b.marks - a.marks));
 
   return (
     <div style={{ fontFamily: '"poppins", sans-serif' }}>
-      <h3>Student Crud</h3>
+      <h3>Student Crud with Redux</h3>
       <form onSubmit={(e) => handleSubmit(e)}>
         <Box display="flex" flexDirection="column" gap={2}>
           <TextField
@@ -199,15 +187,16 @@ export default function LocalStorageCrud() {
       </form>
 
       {/* Filtering */}
-      <Box>
+      <Box sx={{ mt: 3, mb: 3 }}>
         <FormControl sx={{ width: "15%" }}>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={cat}
+            value={category}
             label=""
-            onChange={(e) => setCat(e.target.value)}
+            onChange={(e) => dispatch(setCategory(e.target.value))}
           >
+            <MenuItem value={"all"}>All</MenuItem>
             <MenuItem value={"maths"}>Maths</MenuItem>
             <MenuItem value={"english"}>English</MenuItem>
             <MenuItem value={"science"}>Science</MenuItem>
@@ -226,7 +215,8 @@ export default function LocalStorageCrud() {
         <TextField
           type="text"
           placeholder="Search here"
-          onChange={(e) => setTerm(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => dispatch(setSearchTerm(e.target.value))}
           sx={{
             width: "15%",
             fontFamily: '"poppins", sans-serif',
@@ -242,15 +232,13 @@ export default function LocalStorageCrud() {
             id="demo-simple-select"
             value={sort}
             label=""
-            onChange={(e) => setSort(e.target.value)}
+            onChange={(e) => dispatch(setSort(e.target.value))}
           >
             <MenuItem value={"asc"}>Asc</MenuItem>
             <MenuItem value={"desc"}>Desc</MenuItem>
           </Select>
         </FormControl>
       </Box>
-      <br />
-      <br />
 
       {/* Student data */}
       <TableContainer component={Paper}>
@@ -300,4 +288,4 @@ export default function LocalStorageCrud() {
       </TableContainer>
     </div>
   );
-}
+} 
